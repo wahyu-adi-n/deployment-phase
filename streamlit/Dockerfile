@@ -1,8 +1,10 @@
 FROM python:3.8.0-slim
 
 WORKDIR /app
+
 COPY ./requirements.txt /app/requirements.txt
 
+RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
 
 COPY . /app

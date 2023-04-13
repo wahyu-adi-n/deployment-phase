@@ -20,6 +20,8 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
+    ports:
+      - "5000:5000"
     depends_on:
       - db
     restart: always

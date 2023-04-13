@@ -4,17 +4,17 @@ from datetime import datetime
 
 db = pw.PostgresqlDatabase(
     config.POSTGRES_DB,
-    user=config.POSTGRES_USER, 
+    user=config.POSTGRES_USER,
     password=config.POSTGRES_PASSWORD,
-    host=config.POSTGRES_HOST, 
+    host=config.POSTGRES_HOST,
     port=config.POSTGRES_PORT)
+
 
 class BaseModel(pw.Model):
     class Meta:
         database = db
 
 class Classify(BaseModel):
-    id = pw.IntegerField()
     image = pw.TextField()
     label = pw.TextField()
     conf_score = pw.FloatField()
@@ -24,7 +24,6 @@ class Classify(BaseModel):
 
     def serialize(self):
         data = {
-            'id': self.id,
             'image': self.image,
             'label': self.label,
             'conf_score': float(self.conf_score),
@@ -32,8 +31,7 @@ class Classify(BaseModel):
             'ip_address': self.ip_address,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S')
         }
-
         return data
-    
+
 db.connect()
 db.create_tables([Classify])
