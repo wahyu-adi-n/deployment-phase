@@ -1,8 +1,11 @@
 # Deployment-Phase
+
+## Preview
 <p align="center">
    <img src="./docs/image_postman.png"  style="margin:15px">
    <img src="./docs/image_streamlit.png"  style="margin:15px">
 </p>
+
 ## How to Run
 1. clone this repo and go to deployment-phase directory: cd deployment-phase
 2. Firstly, pull docker container for postgres sql: docker pull postgres
