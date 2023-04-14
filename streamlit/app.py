@@ -40,24 +40,31 @@ def main():
         image_base64 = base64.b64encode(
             file_uploader.getvalue()).decode('utf-8')
         image_original = readb64(image_base64)
-        image, button, _ = st.columns(3)
+        image, image64, button = st.columns(3)
 
         with image:
-            st.image(image_original)
+            st.subheader('Original Image: ')
+            st.image(image_original, width=300)
+
+        with image64:
+            st.subheader('Image Base 64 (string): ')
+            st.write(image_base64)
 
         with button:
+            st.subheader('Inference: ')
             st.write('Click this button for making predictions (inference)')
-            st.button('🚀 Predict')
-            try:
-                with st.spinner('🕔 Wait for it...'):
-                    time.sleep(0.1)
-                    url = 'http://localhost:5000/predict'
-                    response = requests.post(
-                        url = url, json = payload(image_base64)).json()
-                    st.json(response)
-                    st.success('✅ Request was successful!')
-            except Exception as e:
-                st.exception(e)
+            if st.button('🚀 Predict'):
+                try:
+                    with st.spinner('🕔 Wait for it...'):
+                        time.sleep(0.1)
+                        url = 'http://localhost:5000/predict'
+                        response = requests.post(
+                            url=url, json=payload(image_base64)).json()
+                        st.json(response)
+                        st.success('✅ Request was successful!')
+                except Exception as e:
+                    st.exception(e)
+
 
 if __name__ == '__main__':
     main()
