@@ -3,7 +3,8 @@ from libs.model import ClassifierModel
 from libs.utils import predict, get_device, readb64
 from PIL import Image
 import torch
-import database as db
+import config
+import psycopg2
 import config
 
 app = Flask(__name__)
@@ -18,11 +19,9 @@ model.load_state_dict(trained_weights)
 model.eval()
 print('PyTorch model loaded !')
 
-
 @app.route("/")
 def index():
     return "Image Classification Project"
-
 
 @app.route('/predict', methods=['POST'])
 def classify():
@@ -34,32 +33,32 @@ def classify():
             image_read = readb64(data['image'])
             image = Image.fromarray(image_read)
             pred_proba, pred_label = predict(model, image)
+            save_result(pred_proba, pred_label)
             return jsonify({'conf_score': pred_proba,
                             'label': str(pred_label)})
-
-
-@app.route('/save_results', methods=['POST'])
-def post_classifier_results():
-    if request.method == 'POST':
-        expected_fields = [
-            'image',
-            'conf_score',
-            'label',
-            'user_agents',
-            'ip_address',
-        ]
-        if any(field not in request.form for field in expected_fields):
-            return jsonify({'error': 'Missing field in body'}), 400
-        query = db.Classify.create(**request.form)
-        return jsonify(query.serialize())
-
-
-@app.route('/get_results', methods=['GET'])
-def get_classifier_results():
-    if request.method == 'GET':
-        query = db.Classify.select().order_by(db.Classify.created_date.desc())
-        return jsonify([r.serialize() for r in query])
-
-
+                            
+def save_result(pred_proba, pred_label):
+    # Connect to PostgreSQL
+    conn = psycopg2.connect(
+        dbname=config.POSTGRES_DB,
+        user=config.POSTGRES_USER,
+        password=config.POSTGRES_PASSWORD,
+        host=config.POSTGRES_HOST,
+        port=config.POSTGRES_PORT
+    )
+    print(conn)
+    cur = conn.cursor()
+    
+    # Create a table    
+    cur.execute('''CREATE TABLE IF NOT EXISTS prediction_results (
+                       id SERIAL PRIMARY KEY,
+                       conf_score FLOAT,
+                       label TEXT);''')
+    conn.commit()
+    cur.execute("INSERT INTO prediction_results (conf_score, label) VALUES (%s, %s)", (pred_proba, pred_label)) 
+    conn.commit()        
+    # cur.close()
+    # conn.close()
+    
 if __name__ == '__main__':
     app.run(debug=config.DEBUG, host=config.HOST, port=config.PORT)
